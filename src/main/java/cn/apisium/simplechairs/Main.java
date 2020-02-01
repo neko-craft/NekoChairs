@@ -16,6 +16,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -48,6 +50,7 @@ public class Main extends JavaPlugin implements Listener {
         final Entity t = e.getPlayer().getVehicle();
         if (t instanceof ArmorStand) {
             e.getPlayer().leaveVehicle();
+            check(t);
         }
     }
 
@@ -56,17 +59,15 @@ public class Main extends JavaPlugin implements Listener {
         final Block b = e.getClickedBlock();
         final Player p = e.getPlayer();
         if (p.getGameMode() == GameMode.SPECTATOR || e.getItem() != null || e.getAction() != RIGHT_CLICK_BLOCK ||
-            b == null || p.hasPermission("simplechairs.cannotsit") || b.getType().data != Stairs.class) return;
+            b == null || (!p.isOp() && p.hasPermission("simplechairs.cannotsit")) ||
+            b.getType().data != Stairs.class) return;
         final Stairs data = (Stairs) b.getBlockData();
         if (data.getHalf() == Bisected.Half.TOP) return;
         final Location l = b.getLocation().clone().add(0.5, -1.18, 0.5);
         final Collection<ArmorStand> entities = l.getNearbyEntitiesByType(ArmorStand.class, 0.5, 0.5, 0.5);
         int i = entities.size();
         if (i > 0) {
-            for (ArmorStand it : entities) {
-                check(it);
-                i--;
-            }
+            for (ArmorStand it : entities) if (!check(it)) i--;
             if (i > 0) return;
         }
         switch (data.getFacing()) {
@@ -91,22 +92,37 @@ public class Main extends JavaPlugin implements Listener {
     void onEntityDismount(final EntityDismountEvent e) {
         final Entity l = e.getDismounted();
         final String name = l.getCustomName();
-        if (l instanceof ArmorStand && name != null && name.equals(NAME)) {
-            l.remove();
-            list.remove(l);
-            final Entity p = e.getEntity();
-            getServer().getScheduler().runTaskLater(this, () ->
-                p.teleport(p.getLocation().add(0.0, 0.5, 0.0)), 1);
-        }
+        if (l instanceof ArmorStand && name != null && name.equals(NAME)) leaveChair(l, e.getEntity());
     }
 
-    private void check(final Entity it) {
+    private void leaveChair(final Entity l, @Nullable final Entity p) {
+        //noinspection SuspiciousMethodCalls
+        list.remove(l);
+        l.remove();
+        getServer().getScheduler().runTaskLater(this, () -> {
+            final Entity p2 = p == null ? l.getPassenger() : p;
+            if (p2 == null) return;
+            p2.teleport(p2.getLocation().add(0.0, 0.5, 0.0));
+        }, 1);
+    }
+
+    private boolean check(final Entity it) {
         final String name = it.getCustomName();
         final Entity p = it.getPassenger();
-        if (name != null && name.equals(NAME) && (p == null || p.getVehicle() != it)) {
+        if (name != null && name.equals(NAME)) {
+            if (p != null && p.getVehicle() == it && it.getLocation().clone().add(-0.5, 1.18, -0.5)
+                .getBlock().getType().data == Stairs.class) return true;
             it.remove();
             //noinspection SuspiciousMethodCalls
             list.remove(it);
         }
+        return false;
+    }
+
+    private ArrayList<ArmorStand> getChairsNearBy(final Location l) {
+        final Collection<ArmorStand> entities = l.getNearbyEntitiesByType(ArmorStand.class, 0.5, 0.5, 0.5);
+        final ArrayList<ArmorStand> list = new ArrayList<>();
+        for (ArmorStand it : entities) if (check(it)) list.add(it);
+        return list;
     }
 }
