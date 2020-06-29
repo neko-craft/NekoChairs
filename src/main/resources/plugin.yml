@@ -1,7 +1,0 @@
-name: SimpleChairs
-version: @version@
-main: cn.apisium.simplechairs.Main
-api-version: 1.13
-author: Shirasawa
-description: Make some chairs in Minecraft!
-website: apisium.cn

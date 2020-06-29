@@ -1,10 +1,8 @@
 apply plugin: 'java'
+apply plugin: 'idea'
 
 group = pluginGroup
 version = pluginVersion
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
@@ -19,13 +17,8 @@ repositories {
 }
 
 dependencies {
-    compile 'com.destroystokyo.paper:paper-api:1.15.2-R0.1-SNAPSHOT'
-}
+    compileOnly 'org.spigotmc:plugin-annotations:1.2.3-SNAPSHOT'
+    compileOnly 'com.destroystokyo.paper:paper-api:1.16.1-R0.1-SNAPSHOT'
 
-import org.apache.tools.ant.filters.ReplaceTokens
-
-processResources {
-    from(sourceSets.main.resources.srcDirs) {
-        filter ReplaceTokens, tokens: [version: version]
-    }
+    annotationProcessor 'org.spigotmc:plugin-annotations:1.2.3-SNAPSHOT'
 }
