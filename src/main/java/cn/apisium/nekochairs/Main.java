@@ -20,7 +20,6 @@ import org.bukkit.plugin.java.annotation.plugin.*;
 import org.bukkit.plugin.java.annotation.plugin.author.Author;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -107,7 +106,7 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     @SuppressWarnings("SuspiciousMethodCalls")
-    private void leaveChair(final Entity l, @Nullable final Entity p) {
+    private void leaveChair(final Entity l, final Entity p) {
         list.remove(l);
         l.remove();
         getServer().getScheduler().runTaskLater(this, () -> {
