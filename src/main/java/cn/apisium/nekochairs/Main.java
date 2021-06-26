@@ -80,11 +80,12 @@ public class Main extends JavaPlugin implements Listener {
             for (ArmorStand it : entities) if (!check(it)) i--;
             if (i > 0) return;
         }
-        switch (data.getFacing()) {
-            case SOUTH: l.setYaw(180); break;
-            case EAST: l.setYaw(90); break;
-            case WEST: l.setYaw(270); break;
-        }
+        l.setYaw(switch (data.getFacing()) {
+            case SOUTH -> 180;
+            case EAST -> 90;
+            case WEST -> 270;
+            default -> 0;
+        });
 
         final ArmorStand a = (ArmorStand) b.getWorld().spawnEntity(l, EntityType.ARMOR_STAND);
         a.setAI(false);
