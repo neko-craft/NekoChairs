@@ -1,4 +1,4 @@
-package cn.apisium.simplechairs;
+package cn.apisium.nekochairs;
 
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -13,10 +13,13 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.java.annotation.permission.Permission;
+import org.bukkit.plugin.java.annotation.plugin.*;
+import org.bukkit.plugin.java.annotation.plugin.author.Author;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -24,6 +27,12 @@ import java.util.HashSet;
 import static org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK;
 
 @SuppressWarnings({ "deprecation", "unused" })
+@Plugin(name = "NekoChairs", version = "1.0")
+@Description("Make some chairs in Minecraft!")
+@Author("Shirasawa")
+@Website("https://apisium.cn")
+@Permission(name = "nekochairs.use", defaultValue = PermissionDefault.TRUE)
+@ApiVersion(ApiVersion.Target.v1_13)
 public class Main extends JavaPlugin implements Listener {
     private final String NAME = "$$Chairs$$";
     private final HashSet<ArmorStand> list = new HashSet<>();
@@ -59,7 +68,7 @@ public class Main extends JavaPlugin implements Listener {
         final Block b = e.getClickedBlock();
         final Player p = e.getPlayer();
         if (p.getGameMode() == GameMode.SPECTATOR || e.getItem() != null || e.getAction() != RIGHT_CLICK_BLOCK ||
-            b == null || (!p.isOp() && p.hasPermission("simplechairs.cannotsit")) ||
+            b == null || !p.hasPermission("nekochairs.use") ||
             b.getType().data != Stairs.class) return;
         final Stairs data = (Stairs) b.getBlockData();
         if (data.getHalf() == Bisected.Half.TOP) return;
@@ -70,11 +79,12 @@ public class Main extends JavaPlugin implements Listener {
             for (ArmorStand it : entities) if (!check(it)) i--;
             if (i > 0) return;
         }
-        switch (data.getFacing()) {
-            case SOUTH: l.setYaw(180); break;
-            case EAST: l.setYaw(90); break;
-            case WEST: l.setYaw(270); break;
-        }
+        l.setYaw(switch (data.getFacing()) {
+            case SOUTH -> 180;
+            case EAST -> 90;
+            case WEST -> 270;
+            default -> 0;
+        });
 
         final ArmorStand a = (ArmorStand) b.getWorld().spawnEntity(l, EntityType.ARMOR_STAND);
         a.setAI(false);
@@ -95,8 +105,8 @@ public class Main extends JavaPlugin implements Listener {
         if (l instanceof ArmorStand && name != null && name.equals(NAME)) leaveChair(l, e.getEntity());
     }
 
-    private void leaveChair(final Entity l, @Nullable final Entity p) {
-        //noinspection SuspiciousMethodCalls
+    @SuppressWarnings("SuspiciousMethodCalls")
+    private void leaveChair(final Entity l, final Entity p) {
         list.remove(l);
         l.remove();
         getServer().getScheduler().runTaskLater(this, () -> {
@@ -106,6 +116,7 @@ public class Main extends JavaPlugin implements Listener {
         }, 1);
     }
 
+    @SuppressWarnings("SuspiciousMethodCalls")
     private boolean check(final Entity it) {
         final String name = it.getCustomName();
         final Entity p = it.getPassenger();
@@ -113,7 +124,6 @@ public class Main extends JavaPlugin implements Listener {
             if (p != null && p.getVehicle() == it && it.getLocation().clone().add(-0.5, 1.18, -0.5)
                 .getBlock().getType().data == Stairs.class) return true;
             it.remove();
-            //noinspection SuspiciousMethodCalls
             list.remove(it);
         }
         return false;

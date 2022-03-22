@@ -1,6 +1,6 @@
 # SimpleCore
 
-Make some chairs in Minecraft. *(Works on 1.15.2)*
+Make some chairs in Minecraft.
 
 ## Screenshot
 
@@ -12,12 +12,12 @@ Right click on any kind of **stairs** with **empty** main hand.
 
 ## Permission
 
-- **simplechairs.cannotsit**: Prevent players from sitting on chairs.
+- **nekochairs.use**: Allow players sit on chairs.
 
 ## Build
 
 ```bash
-git clone https://github.com/Apisium/SimpleCharis.git
+git clone https://github.com/neko-craft/NekoCharis.git
 
 gradlew jar
 ```
